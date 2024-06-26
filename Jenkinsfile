@@ -31,7 +31,7 @@ pipeline {
             }   
         }      
         
-        stage('Image push to local Docker registry') {
+        stage('Image push to online Docker registry') {
             steps {
                 script {
                     // Docker Build
