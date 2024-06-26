@@ -31,7 +31,7 @@ pipeline {
             environment {
                 DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
                 // Adjust the path to your Dockerfile if needed
-                DOCKERFILE_LOCATION = "spring-boot-app/Dockerfile"
+                DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
                 REGISTRY_CREDENTIALS = credentials('docker-cred')
             }
             steps {
