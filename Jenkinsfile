@@ -8,21 +8,25 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
+
         stage('Test') {
             steps {
                 sh 'mvn test'
             }
         }
-        stage('Publishing Junit Tests report') {
+
+        stage('Publishing JUnit Tests report') {
             steps {
                 junit 'target/surefire-reports/*.xml'
-            }   
+            }
         }
+
         stage('Publishing Code Coverage') {
             steps {
                 jacoco()
-            }   
+            }
         }
+
         stage('Docker Image Push') {
             steps {
                 script {
@@ -31,8 +35,8 @@ pipeline {
                     
                     // Login to Docker Hub securely
                     withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        def dockerLoginCmd = "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                        sh dockerLoginCmd
+                        // Docker login command
+                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
                         
                         // Push Docker image
                         docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
@@ -42,6 +46,15 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline successfully completed!'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
