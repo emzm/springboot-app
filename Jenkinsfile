@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-
         stage('Build') {
             steps {
                 sh 'mvn clean install'
@@ -35,10 +34,13 @@ pipeline {
             }
             steps {
                 script {
-                    sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-                    def dockerImage = docker.image("${DOCKER_IMAGE}")
-                    docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS) {
-                        dockerImage.push()
+                    // Use TCP connection to Docker daemon
+                    docker.withServer('tcp://127.0.0.1:2376') {
+                        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+                        def dockerImage = docker.image("${DOCKER_IMAGE}")
+                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS) {
+                            dockerImage.push()
+                        }
                     }
                 }
             }
