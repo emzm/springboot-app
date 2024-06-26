@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Publishing JUnit Tests report') {
+        stage('Publishing JUnit Tests Report') {
             steps {
                 junit 'target/surefire-reports/*.xml'
             }
@@ -27,22 +27,22 @@ pipeline {
             }
         }
 
-        stage('Docker Image Push') {
+        stage('Build and Push Docker Image') {
+            environment {
+                DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
+                // Adjust the path to your Dockerfile if needed
+                DOCKERFILE_LOCATION = "spring-boot-app/Dockerfile"
+                REGISTRY_CREDENTIALS = credentials('docker-cred')
+            }
             steps {
                 script {
-                    def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    def dockerTag = "1zee/springboot-app:${commitSHA}"
+                    // Build Docker image
+                    sh "cd ${DOCKERFILE_LOCATION} && docker build -t ${DOCKER_IMAGE} ."
                     
-                    // Login to Docker Hub securely
-                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Docker login command
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                        
-                        // Push Docker image
-                        docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
-                            def customImage = docker.image(dockerTag)
-                            customImage.push()
-                        }
+                    // Push Docker image
+                    docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS) {
+                        def dockerImage = docker.image("${DOCKER_IMAGE}")
+                        dockerImage.push()
                     }
                 }
             }
