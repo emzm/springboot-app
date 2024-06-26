@@ -30,7 +30,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             environment {
                 DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
-                DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app"
+                //DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/dockerfile"
                 REGISTRY_CREDENTIALS = credentials('docker-cred')
             }
             steps {
@@ -39,7 +39,7 @@ pipeline {
                     sh "docker build -t ${DOCKER_IMAGE} ${DOCKERFILE_LOCATION}"
                     
                     // Push Docker image
-                    docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS) {
+                    docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS) {
                         def dockerImage = docker.image("${DOCKER_IMAGE}")
                         dockerImage.push()
                     }
