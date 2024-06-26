@@ -1,10 +1,6 @@
 pipeline {
     agent any
-    
-    environment {
-        dockerImage = 'springbootjacoco:0.0.1'  // Define your Docker image name and tag
-    }
-    
+
     stages {
         stage('Build') {
             steps {
@@ -12,34 +8,27 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
-        
         stage('Test') {
             steps {
                 sh 'mvn test'
             }
         }
-        
         stage('Publishing Junit Tests report') {
             steps {
                 junit 'target/surefire-reports/*.xml'
             }   
         }
-        
         stage('Publishing Code Coverage') {
             steps {
                 jacoco()
             }   
-        }      
-        
-        stage('Image push to Docker registry') {
+        }
+        stage('Docker Image Push') {
             steps {
                 script {
-                    // Docker Build
-                    docker.build("${dockerImage}", "-f Dockerfile .")
-                    
-                    // Docker Push
-                    docker.withRegistry('https://hub.docker.com', 'docker-cred') {
-                        docker.image("${dockerImage}").push()
+                    docker.withRegistry('https://hub.docker.com/u/1zee', 'docker-cred') {
+                        def customImage = docker.image('1zee/springboot-app:tagname')
+                        customImage.push()
                     }
                 }
             }
