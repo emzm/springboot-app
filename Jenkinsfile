@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Build') {
             steps {
@@ -15,7 +15,7 @@ pipeline {
             }
         }
         
-        stage('Publishing JUnit Tests report') {
+        stage('Publishing Junit Tests report') {
             steps {
                 junit 'target/surefire-reports/*.xml'
             }   
@@ -27,20 +27,17 @@ pipeline {
             }   
         }      
         
-        stage('Build and Push Docker Image') {
-            environment {
-                DOCKER_IMAGE = "emzm-cicd-springboot-maven/ultimate-cicd:${BUILD_NUMBER}"
-                REGISTRY_CREDENTIALS = credentials('docker-cred')
-            }
+        stage('Image push to local Docker registry') {
             steps {
                 script {
-                    // Use TCP connection to Docker daemon
-                    docker.withServer('tcp://127.0.0.1:2376') {
-                        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-                        def dockerImage = docker.image("${DOCKER_IMAGE}")
-                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS) {
-                            dockerImage.push()
-                        }
+                    def dockerImage = 'springbootjacoco:0.0.1'  // Update with your image tag and name
+                    
+                    // Build Docker image
+                    sh "docker build -t dockerregistry.com/${dockerImage} -f Dockerfile ."
+                    
+                    // Authenticate and push to Docker registry
+                    withDockerRegistry(credentialsId: 'docker-cred', url: 'https://dockerregistry.com/v2/') {
+                        sh "docker push dockerregistry.com/${dockerImage}"
                     }
                 }
             }
