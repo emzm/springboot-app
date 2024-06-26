@@ -38,7 +38,7 @@ pipeline {
                     docker.build("${dockerImage}", "-f Dockerfile .")
                     
                     // Docker Push
-                    docker.withRegistry('https://hub.docker.com/u/1zee', 'docker-cred') {
+                    docker.withRegistry('https://hub.docker.com', 'docker-cred') {
                         docker.image("${dockerImage}").push()
                     }
                 }
