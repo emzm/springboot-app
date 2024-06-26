@@ -29,13 +29,13 @@ pipeline {
                     def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     def dockerTag = "1zee/springboot-app:${commitSHA}"
                     
-                    // Login to Docker Hub
+                    // Login to Docker Hub securely
                     withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        def dockerLogin = "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                        sh "$dockerLogin"
+                        def dockerLoginCmd = "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                        sh dockerLoginCmd
                         
                         // Push Docker image
-                        docker.withRegistry('https://hub.docker.com', 'docker-cred') {
+                        docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
                             def customImage = docker.image(dockerTag)
                             customImage.push()
                         }
