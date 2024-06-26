@@ -35,7 +35,7 @@ pipeline {
                         sh dockerLoginCmd
                         
                         // Push Docker image
-                        docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
+                        docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
                             def customImage = docker.image(dockerTag)
                             customImage.push()
                         }
