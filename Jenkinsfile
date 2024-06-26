@@ -31,14 +31,14 @@ pipeline {
             }   
         }      
         
-        stage('Image push to online Docker registry') {
+        stage('Image push to Docker registry') {
             steps {
                 script {
                     // Docker Build
                     docker.build("${dockerImage}", "-f Dockerfile .")
                     
                     // Docker Push
-                    docker.withRegistry('https://dockerregistry.com', 'docker-cred') {
+                    docker.withRegistry('https://hub.docker.com/u/1zee', 'docker-cred') {
                         docker.image("${dockerImage}").push()
                     }
                 }
