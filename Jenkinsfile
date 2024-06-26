@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    environment {
+        dockerImage = 'springbootjacoco:0.0.1'  // Define your Docker image name and tag
+    }
+    
     stages {
         stage('Build') {
             steps {
@@ -30,14 +34,12 @@ pipeline {
         stage('Image push to local Docker registry') {
             steps {
                 script {
-                    def dockerImage = 'springbootjacoco:0.0.1'  // Update with your image tag and name
+                    // Docker Build
+                    docker.build("${dockerImage}", "-f Dockerfile .")
                     
-                    // Build Docker image
-                    sh "docker build -t dockerregistry.com/${dockerImage} -f Dockerfile ."
-                    
-                    // Authenticate and push to Docker registry
-                    withDockerRegistry(credentialsId: 'docker-cred', url: 'https://dockerregistry.com/v2/') {
-                        sh "docker push dockerregistry.com/${dockerImage}"
+                    // Docker Push
+                    docker.withRegistry('https://dockerregistry.com', 'docker-cred') {
+                        docker.image("${dockerImage}").push()
                     }
                 }
             }
