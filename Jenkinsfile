@@ -4,28 +4,7 @@ pipeline {
 //       maven 'maven'
 //   }
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                   //checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-pat-', url: 'https://github.com/rehmanjaffar/nodeApp.git']])
-                //   checkout([$class: 'GitSCM',
-                //              branches: [[name: '*/master']],
-                //              extensions: [[$class: 'SparseCheckoutPaths', paths: ['reactApp-master']]],
-                //              userRemoteConfigs: [[credentialsId: 'github-pat',
-                //              url: 'https://github.com/UsmanAsim11/projects.git']]
-                //     ])
-                checkout([$class: 'GitSCM',
-                            branches: [[name: '*/main']],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [
-                            [$class: 'SparseCheckoutPaths', sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'springboot-app/'],[$class:'SparseCheckoutPath', path:'nodeApplication/']]],
-                            ],
-                            submoduleCfg: [],
-                            userRemoteConfigs: [[credentialsId: 'github-pat',
-                            url: 'https://github.com/emzm/jenkins_pipelines_all_apps.git']]])
-                }
-            }
-        }
+
         stage('Build') {
             steps {
                // sh 'mvn -version'
