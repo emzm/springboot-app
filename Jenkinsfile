@@ -1,26 +1,19 @@
 pipeline {
     agent any
-//     tools {
-//       maven 'maven'
-//   }
-    stages {
 
+    stages {
         stage('Build') {
             steps {
-               // sh 'mvn -version'
                 sh 'mvn clean install'
                 sh 'mvn clean package'
-               // sh 'mvn clean package -Dmaven.test.failure.ignore=true'
             }
         }
         stage('Test') {
             steps {
                 sh 'mvn test'
-                //sh 'mvn test -Dmaven.test.failure.ignore=true'
             }
         }
-        
-        stage('Publishing Junit Tests report ') {
+        stage('Publishing Junit Tests report') {
             steps {
                 junit 'target/surefire-reports/*.xml'
             }   
@@ -29,17 +22,26 @@ pipeline {
             steps {
                 jacoco()
             }   
-        }      
-        
-        stage('Image push to local Docker registry') {
+        }
+        stage('Docker Image Push') {
             steps {
-                sh 'docker version'
-                sh 'docker build -t dockerregistry.com/springbootjacoco:0.0.1 -f Dockerfile .'
-                withDockerRegistry(credentialsId: 'docker-cred', url: 'https://dockerregistry.com/v2/') 
-                 {
-                 sh 'docker push dockerregistry.com/springbootjacoco:0.0.1'
-                 }
-             }
-         }
+                script {
+                    def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    def dockerTag = "1zee/springboot-app:${commitSHA}"
+                    
+                    // Login to Docker Hub securely
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        def dockerLoginCmd = "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                        sh dockerLoginCmd
+                        
+                        // Push Docker image
+                        docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
+                            def customImage = docker.image(dockerTag)
+                            customImage.push()
+                        }
+                    }
+                }
+            }
+        }
     }
 }
