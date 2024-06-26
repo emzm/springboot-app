@@ -1,11 +1,14 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'maven:3.8.1-jdk-11'
+            label 'docker-agent'
+        }
+    }
     stages {
         stage('Build') {
             steps {
                 sh 'mvn clean install'
-                sh 'mvn clean package'
             }
         }
         stage('Test') {
@@ -13,32 +16,16 @@ pipeline {
                 sh 'mvn test'
             }
         }
-        stage('Publishing Junit Tests report') {
-            steps {
-                junit 'target/surefire-reports/*.xml'
-            }   
-        }
-        stage('Publishing Code Coverage') {
-            steps {
-                jacoco()
-            }   
-        }
-        stage('Docker Image Push') {
+        stage('Docker Build and Push') {
+            environment {
+                DOCKER_REGISTRY = "hub.docker.com"
+                DOCKER_CREDENTIALS_ID = "docker-cred"
+            }
             steps {
                 script {
-                    def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    def dockerTag = "1zee/springboot-app:${commitSHA}"
-                    
-                    // Login to Docker Hub securely
-                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        def dockerLoginCmd = "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                        sh dockerLoginCmd
-                        
-                        // Push Docker image
-                        docker.withRegistry('https://registry.hub.docker.com', 'docker-cred1') {
-                            def customImage = docker.image(dockerTag)
-                            customImage.push()
-                        }
+                    docker.withRegistry('https://${DOCKER_REGISTRY}', DOCKER_CREDENTIALS_ID) {
+                        def app = docker.build("1zee/my-app:${env.BUILD_NUMBER}")
+                        app.push()
                     }
                 }
             }
