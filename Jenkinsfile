@@ -1,3 +1,4 @@
+
 pipeline {
     agent {
         docker {
@@ -28,13 +29,12 @@ pipeline {
         stage('Build and Push Docker Image') {
             environment {
                 DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
-                DOCKERFILE_LOCATION = "Dockerfile"
                 REGISTRY_CREDENTIALS = credentials('docker-cred')
             }
             steps {
                 script {
                     // Build Docker image
-                    sh "docker build -t ${DOCKER_IMAGE} ${DOCKERFILE_LOCATION}"
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                     
                     // Push Docker image
                     docker.withRegistry('https://hub.docker.com', REGISTRY_CREDENTIALS) {
@@ -55,4 +55,3 @@ pipeline {
         }
     }
 }
-
