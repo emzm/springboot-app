@@ -4,8 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean install'
-                sh 'mvn clean package'
+                sh 'mvn clean install package'
             }
         }
 
@@ -39,7 +38,7 @@ pipeline {
                     sh "docker build -t ${DOCKER_IMAGE} ${DOCKERFILE_LOCATION}"
                     
                     // Push Docker image
-                    docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS) {
+                    docker.withRegistry('https://hub.docker.com', REGISTRY_CREDENTIALS) {
                         def dockerImage = docker.image("${DOCKER_IMAGE}")
                         dockerImage.push()
                     }
