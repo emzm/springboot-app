@@ -34,7 +34,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             environment {
                 DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
-                DOCKERFILE_LOCATION = "springboot-app/dockerfile"
+                DOCKERFILE_LOCATION = "springboot-app"
                 REGISTRY_CREDENTIALS = credentials('docker-cred')
             }
             steps {
