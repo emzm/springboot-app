@@ -31,16 +31,14 @@ pipeline {
       environment {
         DOCKER_IMAGE = "1zee/ultimate-cicd:${BUILD_NUMBER}"
         DOCKER_REGISTRY = 'https://index.docker.io/v1/'  // Public Docker Hub (change for private registry)
-        DOCKER_CREDENTIALS = credentials('docker-cred1')
       }
       steps {
-        script {
-          def dockerUsername = DOCKER_CREDENTIALS.username
-          def dockerPassword = DOCKER_CREDENTIALS.password
-          
-          sh "docker login -u ${dockerUsername} -p ${dockerPassword} ${DOCKER_REGISTRY}"
-          sh "docker build -t ${DOCKER_IMAGE} ."
-          sh "docker push ${DOCKER_IMAGE}"  // Use only the image name as the registry is already included in the image name
+        withCredentials([usernamePassword(credentialsId: 'docker-cred1', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+          script {
+            sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}"
+            sh "docker build -t ${DOCKER_IMAGE} ."
+            sh "docker push ${DOCKER_IMAGE}"  // Use only the image name as the registry is already included in the image name
+          }
         }
       }
     }
